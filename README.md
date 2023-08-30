@@ -9,11 +9,11 @@ PowerShell script to bulk deploy or redeploy VMware Unified Access Gateway (UAG)
 ## Usage
 .\BulkDeployUAG.ps1 [vCenterUser] [vCenterPassword]
 
-## Where
+### Where
 * vCenterUser     = Username for vCenter Server.
 * vCenterPassword  = Password for vCenter Server user.
 
-## Examples
+### Examples
 * .\BulkDeployUAG.ps1
 * .\BulkDeployUAG.ps1 administrator@vsphere.local Password
 
