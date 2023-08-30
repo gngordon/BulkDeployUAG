@@ -19,7 +19,7 @@ Requires
      .\BulkDeployUAG.ps1 administrator@vsphere.local Password
 
  .NOTES
-    Version:        2.1
+    Version:        2.2
     Author:         Graeme Gordon - ggordon@vmware.com
     Creation Date:  2023/08/30
     Purpose/Change: Bulk deploy or update Unified Access Gateway Appliances
@@ -210,7 +210,7 @@ function UpdateINI ($uag)
 # Update the settings INI file for this UAG                                    #
 ################################################################################
 	$UAGFileName = $inifolder + "\" + $uag
-	Write-Host ("UAG File Name             : " + $UAGFileName) -ForegroundColor Yellow
+	Write-Host ("Input UAG File Name       : " + $UAGFileName) -ForegroundColor Yellow
 	$uagini = ImportIni $UAGFileName #Read INI file for the UAG
 
 	#Replace variables with specific info for this UAG
@@ -228,21 +228,22 @@ function UpdateINI ($uag)
 		$uagini.General.target = "vi://" + $vCenterUser + [char]58 + $vCenterPassword  + $targetpath
 	}
 	
-	#Update the INI file
-	Write-Host ("Updating settings file    : " + $uag) -ForegroundColor Yellow	
-	Set-Content -path $UAGFileName -value ""
+	#Create a runtime version of the INI file
+	$RuntimeUAGFileName = $runtimefolder + "\" + $uag
+	Write-Host ("Creating runtime INI file : " + $RuntimeUAGFileName) -ForegroundColor Yellow
+	Set-Content -path $RuntimeUAGFileName -value ""
 	
 	#Write the sections and the settings to the file
 	Foreach ($section in $uagini.Keys)
 	{
-		Add-Content -path $UAGFileName -value ("[" + $section + "]")
+		Add-Content -path $RuntimeUAGFileName -value ("[" + $section + "]")
 		Foreach ($item in $uagini.$section.Keys)
 		{
-			Add-Content -path $UAGFileName -value ($item + "=" + $uagini.$section.$item)
+			Add-Content -path $RuntimeUAGFileName -value ($item + "=" + $uagini.$section.$item)
 		}
-		Add-Content -path $UAGFileName -value ""
+		Add-Content -path $RuntimeUAGFileName -value ""
 	}
-	return $UAGFileName
+	return $RuntimeUAGFileName
 }
 
 function DeployUAG ($uag, $UAGFileName)
@@ -275,6 +276,11 @@ $settings				= ImportIni $SettingsFile
 $global:inifolder		= $settings.Files.inifolder
 if (!(Test-path $inifolder)) {
 	$global:inifolder		= ""
+}
+$global:runtimefolder	= $settings.Files.runtimefolder
+if (!(Test-path $runtimefolder)) {
+	Write-Host ("Create runtime INI folder : " + $runtimefolder) -ForegroundColor Green
+	New-Item -Path $runtimefolder -Type Directory
 }
 $global:ovafolder		= $settings.Files.ovafolder
 $global:uagdeployscript	= $settings.Files.uagdeployscript
@@ -309,10 +315,10 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
  				If ($selection.Contains($uag))
  				{
  					Write-Host ("Deploying                 : " + $uag) -ForegroundColor Yellow
-					$UAGFileName = UpdateINI $uag
+					$RuntimeUAGFileName = UpdateINI $uag
 					If (!$demo) 
 					{
-						DeployUAG $uag $UAGFileName
+						DeployUAG $uag $RuntimeUAGFileName
 					}
 				}
 			}
