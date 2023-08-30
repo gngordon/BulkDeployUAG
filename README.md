@@ -21,5 +21,5 @@ PowerShell script to bulk deploy or redeploy VMware Unified Access Gateway (UAG)
 * uagdeploy PowerShell scripts, available with the Unified Access Gateway download (uagdeploy.ps1, uagdeploy.psm1, etc.), extracted and in the same directory as this script.
 * ovftool installed
 * Edit the settings.ini file and change entries to match your environment
-* UAG ini files available (either in the ini folder, the folder you specified in settings.ini, or in a folder you will select when using the script.
+* UAG ini files available in either the folder you specified in settings.ini, or in a folder you will select when using the script.
 * Unified Access Gateway installation OVA
