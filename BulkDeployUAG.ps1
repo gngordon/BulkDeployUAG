@@ -19,9 +19,9 @@ Requires
      .\BulkDeployUAG.ps1 administrator@vsphere.local Password
 
  .NOTES
-    Version:        2.2
+    Version:        2.3
     Author:         Graeme Gordon - ggordon@vmware.com
-    Creation Date:  2023/08/30
+    Creation Date:  2023/08/31
     Purpose/Change: Bulk deploy or update Unified Access Gateway Appliances
   
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -246,7 +246,7 @@ function UpdateINI ($uag)
 	return $RuntimeUAGFileName
 }
 
-function DeployUAG ($uag, $UAGFileName)
+function DeployUAG ($uag, $UAGFileName, $currentjob)
 {
 ################################################################################
 # Deploy the UAG using the settings file created                               #
@@ -256,8 +256,8 @@ function DeployUAG ($uag, $UAGFileName)
 	Write-Host ("Parameters                : " + $params) -ForegroundColor Yellow
 	
 	#Call the uagdeploy script passing the setting file just created
-	Write-Host ("Calling uagdeploy  for    : " + $uag) -ForegroundColor Yellow	
-	Invoke-Expression -Command "& $uagdeployscript $params"
+	Write-Host ("Calling uagdeploy for     : " + $uag) -ForegroundColor Yellow	
+	$global:jobs[$currentjob] = Start-Process -FilePath "PowerShell.exe" -PassThru -ArgumentList "-noexit", "& $uagdeployscript $params"
 }
 
 #region main
@@ -277,6 +277,7 @@ $global:inifolder		= $settings.Files.inifolder
 if (!(Test-path $inifolder)) {
 	$global:inifolder		= ""
 }
+#Check the runtimefolder exists and create it if it doesn't
 $global:runtimefolder	= $settings.Files.runtimefolder
 if (!(Test-path $runtimefolder)) {
 	Write-Host ("Create runtime INI folder : " + $runtimefolder) -ForegroundColor Green
@@ -288,6 +289,7 @@ if (!(Test-path $uagdeployscript)) {
 	WriteErrorString "Error: UAG Deploy ps1 script ($uagdeployscript) not found."
 	Exit
 }
+$maxjobs = $settings.Controls.maxjobs
 If ($settings.Controls.updatetarget -eq "Yes") { $global:updatetarget = $True } else { $global:updatetarget = $False }
 If ($settings.Controls.demo -eq "Yes") { $global:demo = $True } else { $global:demo = $False }
 
@@ -310,15 +312,26 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 			Write-Host ("Demo                      : " + $demo) -ForegroundColor Green
 
 			Add-Type -AssemblyName 'PresentationFramework'
+			$global:jobs = New-Object System.Collections.ArrayList($null) #Define that array that will be use to track Processes called (seperate PowerShell windows)
+			$currentjob	= 0
  			ForEach ($uag in $uaglist)
 			{
  				If ($selection.Contains($uag))
  				{
- 					Write-Host ("Deploying                 : " + $uag) -ForegroundColor Yellow
+ 					Write-Host (" ") -ForegroundColor Yellow
+					Write-Host ("Deploying                 : " + $uag) -ForegroundColor Yellow
 					$RuntimeUAGFileName = UpdateINI $uag
 					If (!$demo) 
 					{
-						DeployUAG $uag $RuntimeUAGFileName
+						$runningjobs = $jobs | Where-Object { $_.HasExited -ne "False"} #Work out how many deployment processes are running
+						While ($runningjobs.count -ge $maxjobs)
+						{
+							Read-Host -Prompt "Max concurrent UAG deployments ($maxjobs) already running. Close completed deployments and press any key"
+							$runningjobs = $jobs | Where-Object { $_.HasExited -ne "False"}
+						}
+						$jobs.Add($currentjob)
+						DeployUAG $uag $RuntimeUAGFileName $currentjob
+						$currentjob += 1
 					}
 				}
 			}
