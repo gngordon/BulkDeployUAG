@@ -19,9 +19,9 @@ Requires
      .\BulkDeployUAG.ps1 administrator@vsphere.local Password
 
  .NOTES
-    Version:        2.3
+    Version:        2.4
     Author:         Graeme Gordon - ggordon@vmware.com
-    Creation Date:  2023/08/31
+    Creation Date:  2023/09/04
     Purpose/Change: Bulk deploy or update Unified Access Gateway Appliances
   
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -257,7 +257,7 @@ function DeployUAG ($uag, $UAGFileName, $currentjob)
 	
 	#Call the uagdeploy script passing the setting file just created
 	Write-Host ("Calling uagdeploy for     : " + $uag) -ForegroundColor Yellow	
-	$global:jobs[$currentjob] = Start-Process -FilePath "PowerShell.exe" -PassThru -ArgumentList "-noexit", "& $uagdeployscript $params"
+	$global:jobs[$currentjob] = Start-Process -FilePath "PowerShell.exe" -PassThru -ArgumentList "& $uagdeployscript $params; Start-Sleep -s $global:deploymentpausetime"
 }
 
 #region main
@@ -289,6 +289,8 @@ if (!(Test-path $uagdeployscript)) {
 	WriteErrorString "Error: UAG Deploy ps1 script ($uagdeployscript) not found."
 	Exit
 }
+$global:deploymentpausetime = $settings.Controls.deploymentpausetime
+$checktime = $settings.Controls.checktime
 $maxjobs = $settings.Controls.maxjobs
 If ($settings.Controls.updatetarget -eq "Yes") { $global:updatetarget = $True } else { $global:updatetarget = $False }
 If ($settings.Controls.demo -eq "Yes") { $global:demo = $True } else { $global:demo = $False }
@@ -318,17 +320,20 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 			{
  				If ($selection.Contains($uag))
  				{
- 					Write-Host (" ") -ForegroundColor Yellow
+ 					Write-Host (" ")
 					Write-Host ("Deploying                 : " + $uag) -ForegroundColor Yellow
 					$RuntimeUAGFileName = UpdateINI $uag
 					If (!$demo) 
 					{
 						$runningjobs = $jobs | Where-Object { $_.HasExited -ne "False"} #Work out how many deployment processes are running
+						If ($runningjobs.count -ge $maxjobs) { Write-Host "Max ($maxjobs) concurrent UAG deployments already running, waiting " -nonewline }
 						While ($runningjobs.count -ge $maxjobs)
 						{
-							Read-Host -Prompt "Max concurrent UAG deployments ($maxjobs) already running. Close completed deployments and press any key"
+							Start-Sleep -s $checktime
+							Write-Host "." -nonewline
 							$runningjobs = $jobs | Where-Object { $_.HasExited -ne "False"}
 						}
+						Write-Host (" ")
 						$jobs.Add($currentjob)
 						DeployUAG $uag $RuntimeUAGFileName $currentjob
 						$currentjob += 1
