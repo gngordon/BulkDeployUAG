@@ -19,9 +19,9 @@ Requires
      .\BulkDeployUAG.ps1 administrator@vsphere.local Password
 
  .NOTES
-    Version:        2.4
+    Version:        2.5
     Author:         Graeme Gordon - ggordon@vmware.com
-    Creation Date:  2023/09/04
+    Creation Date:  2023/09/18
     Purpose/Change: Bulk deploy or update Unified Access Gateway Appliances
   
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
@@ -297,6 +297,10 @@ If ($settings.Controls.demo -eq "Yes") { $global:demo = $True } else { $global:d
 
 #Generate the list of UAGs from the INI files in the inifolder
 GenerateUAGList $inifolder
+
+#Unblock the uagdeploy PowerShell files
+$deployscriptfilepath = $uagdeployscript.Substring(0,$uagdeployscript.LastIndexOf('\')+1)
+Get-Item ($deployscriptfilepath + "uag*.ps*") | unblock-file
 
 #Define the UI and show it
 Define_GUI
