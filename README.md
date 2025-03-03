@@ -1,6 +1,6 @@
 # BulkDeployUAG
 
-PowerShell script to bulk deploy or redeploy VMware Unified Access Gateway (UAG) appliances. This allows the selection of multiple UAGs, For each selected, it generates a runtime version of the deployment INI files to use the new installation OVA, optionally updates the target string to use the supplied credentials, and then deploys the UAG. Deploys multiple UAGs concurrently, the number of which can be controlled by the settings.ini file.
+PowerShell script to bulk deploy or redeploy Omnissa Unified Access Gateway (UAG) appliances. This allows the selection of multiple UAGs, For each selected, it generates a runtime version of the deployment INI files to use the new installation OVA, optionally updates the target string to use the supplied credentials, and then deploys the UAG. Deploys multiple UAGs concurrently, the number of which can be controlled by the settings.ini file.
 
 	* GUI that allows selection of Unified Access Gateways from a list.
 	* List generated from ini files in the chosen directory.
