@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-Script to bulk deploy Unified Access Gateway appliances.
+Script to bulk deploy Omnissa Unified Access Gateway appliances.
 Requires
-	*uagdeploy.ps1 and uagdeploy.psm1 scripts provided with the VMware UAG download in the same directory as this script.
+	*uagdeploy.ps1 and uagdeploy.psm1 scripts provided with the Omnissa UAG download in the same directory as this script.
 	*ovftool installed
 	*UAG ini files
 	*settings.ini file
@@ -19,15 +19,15 @@ Requires
      .\BulkDeployUAG.ps1 administrator@vsphere.local Password
 
  .NOTES
-    Version:        2.5
-    Author:         Graeme Gordon - ggordon@vmware.com
-    Creation Date:  2023/09/18
-    Purpose/Change: Bulk deploy or update Unified Access Gateway Appliances
+    Version:        2.6
+    Author:         Graeme Gordon - ggordon@omnissa.com
+    Creation Date:  2025/03/12
+    Purpose/Change: Bulk deploy or update Unified Access Gateway appliances
   
     THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
     IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
     FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL 
-    VMWARE,INC. BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+    OMNISSA BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
     IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
     CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  #>
